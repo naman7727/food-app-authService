@@ -8,7 +8,7 @@
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "dev": "node src/server.js",
-    "lint:check": "eslint . --check",
+    "lint:check": "eslint .",
     "lint:fix": "eslint .",
     "prepare": "husky"
   },
@@ -20,8 +20,15 @@
     "@types/node": "^24.0.0",
     "eslint": "^9.28.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
     "prettier": "3.5.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "npm run format:fix",
+      "npm run lint:fix"
+    ]
   }
 }
