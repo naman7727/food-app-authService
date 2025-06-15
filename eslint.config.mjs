@@ -1,11 +1,11 @@
 // @ts-check
 
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   eslint.configs.recommended,
-    tseslint.configs.recommendedTypeChecked,
+  tseslint.configs.recommendedTypeChecked,
   {
     languageOptions: {
       parserOptions: {
@@ -13,11 +13,11 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    rules:{
+    rules: {
       // "no-console":"error"
-    }
+    },
   },
   {
-    ignores:["dist","node_modeules","eslint.config.mjs"],
-  }
+    ignores: ["dist", "node_modeules", "eslint.config.mjs", "jest.config.js"],
+  },
 );
