@@ -2,8 +2,11 @@ import request from "supertest";
 import app from "../../src/app";
 import { DataSource } from "typeorm";
 import { AppDataSource } from "../../src/config/data-source";
-import { truncateTables } from "../utils";
 import { User } from "../../src/entity/User";
+import { Roles } from "../../src/constants";
+
+// import { response } from "express";
+
 describe("POST /auth/register", () => {
   let connection: DataSource;
 
@@ -12,8 +15,8 @@ describe("POST /auth/register", () => {
   });
 
   beforeEach(async () => {
-    // Database truncate
-    await truncateTables(connection);
+    await connection.dropDatabase();
+    await connection.synchronize();
   });
 
   afterAll(async () => {
@@ -23,6 +26,7 @@ describe("POST /auth/register", () => {
   describe("Given all fields", () => {
     it("Should return the 201 status code", async () => {
       const userData = {
+        id: 1,
         firstName: "Rakesh",
         lastName: "K",
         email: "rakesh@mern.space",
@@ -66,6 +70,40 @@ describe("POST /auth/register", () => {
       expect(users[0].firstName).toBe(userData.firstName);
       expect(users[0].lastName).toBe(userData.lastName);
       expect(users[0].email).toBe(userData.email);
+    });
+
+    it("Should return an id of the creates user", async () => {
+      // Arrange
+      const userData = {
+        firstName: "Rakesh",
+        lastName: "K",
+        email: "rakesh@mern.space",
+        password: "secret",
+      };
+      // Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Assert
+      expect(response.body).toHaveProperty("id");
+      const userRepository = connection.getRepository(User);
+      const users = await userRepository.find();
+      expect((response.body as Record<string, string>).id).toBe(users[0].id);
+    });
+
+    it("Should assign a customer role", async () => {
+      const userData = {
+        firstName: "Rakesh",
+        lastName: "K",
+        email: "rakesh@mern.space",
+        password: "secret",
+      };
+      // Act
+      await request(app).post("/auth/register").send(userData);
+
+      const userRepository = connection.getRepository(User);
+      const users = await userRepository.find();
+      expect(users[0]).toHaveProperty("role");
+      expect(users[0].role).toBe(Roles.CUSTOMER);
     });
   });
   describe("Fields are missing ", () => {});

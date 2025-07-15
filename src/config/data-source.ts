@@ -9,8 +9,8 @@ export const AppDataSource = new DataSource({
   username: Config.DB_USERNAME,
   password: Config.DB_PASSWORD,
   database: Config.DB_NAME,
-  // don't this line in production.
-  synchronize: Config.NODE_ENV === "test" || Config.NODE_ENV === "dev",
+  // don't this line in production. Always keep false
+  synchronize: false,
   logging: false,
   // entities should be imported from the entity folder
   // if you have create a new entity, you should add it here
