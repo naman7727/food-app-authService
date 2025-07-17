@@ -26,7 +26,7 @@ export class UserService {
       }); // Returns saved user (with ID)
     } catch {
       const error = createHttpError(
-        500,
+        400,
         "Failed to store the data in the database",
       );
       throw error;
