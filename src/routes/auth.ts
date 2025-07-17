@@ -14,7 +14,8 @@ const authController = new AuthController(userService, logger);
 router.post(
   "/register",
   registerValidator,
-  (req: Request, res: Response, next: NextFunction) =>
-    authController.register(req, res, next),
+  (req: Request, res: Response, next: NextFunction) => {
+    authController.register(req, res, next).catch(next);
+  },
 );
 export default router;

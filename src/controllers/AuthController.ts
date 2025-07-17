@@ -12,13 +12,13 @@ export class AuthController {
   ) {}
 
   async register(req: RegisterUserRequest, res: Response, next: NextFunction) {
-    const { firstName, lastName, email, password } = req.body;
-
     // Validation
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      res.status(400).json({ errors: result.array() });
+      return res.status(400).json({ errors: result.array() });
     }
+
+    const { firstName, lastName, email, password } = req.body;
     this.logger.debug("New request to register a user", {
       firstName,
       lastName,
@@ -34,7 +34,7 @@ export class AuthController {
         password,
       } as User);
       this.logger.info("userhas been registered", { id: savedUser.id });
-      res.status(201).json(savedUser);
+      res.status(201).json({ id: savedUser.id });
     } catch (err) {
       next(err);
       return;
