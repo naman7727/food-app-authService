@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// key generation file
 import crypto from "crypto";
 import fs from "fs";
 
