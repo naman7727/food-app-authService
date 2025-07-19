@@ -5,9 +5,6 @@ import { JwtPayload } from "jsonwebtoken";
 import { User } from "../entity/User";
 import { Logger } from "winston";
 import { validationResult } from "express-validator";
-// import { Config } from "../config";
-import { AppDataSource } from "../config/data-source";
-import { RefreshToken } from "../entity/RefreshToken";
 import { TokenService } from "../services/TokenService";
 
 export class AuthController {
@@ -34,36 +31,23 @@ export class AuthController {
     });
 
     try {
-      const savedUser = await this.userService.create({
+      const user = await this.userService.create({
         firstName,
         lastName,
         email,
         password,
       } as User);
-      this.logger.info("userhas been registered", { id: savedUser.id });
+      this.logger.info("userhas been registered", { id: user.id });
 
       const payload: JwtPayload = {
-        sub: String(savedUser.id),
-        role: savedUser.role,
+        sub: String(user.id),
+        role: user.role,
       };
 
       const accessToken = this.tokenService.generateAccessToken(payload);
 
-      // persist the refresh token
-      const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365; //1Y -> (leap year)
-      const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
-      const newRefreshToken = await refreshTokenRepository.save({
-        user: savedUser,
-        expiresAt: new Date(Date.now() + MS_IN_YEAR),
-      });
+      const newRefreshToken = await this.tokenService.persistRefreshToken(user);
 
-      // refreshToken generate and create key and fatch path by certs
-      // const refreshToken = sign(payload, Config.REFRESH_TOKEN_SECRET!, {
-      //   algorithm: "HS256",
-      //   expiresIn: "1y",
-      //   issuer: "auth-service",
-      //   jwtid: String(newRefreshToken.id),
-      // });
       const refreshToken = this.tokenService.generateRefreshToken({
         ...payload,
         id: String(newRefreshToken.id),
@@ -81,7 +65,7 @@ export class AuthController {
         maxAge: 1000 * 60 * 60 * 24 * 365, // 1y
         httpOnly: true, //vary imp.
       });
-      res.status(201).json({ id: savedUser.id });
+      res.status(201).json({ id: user.id });
     } catch (err) {
       next(err);
       return;
