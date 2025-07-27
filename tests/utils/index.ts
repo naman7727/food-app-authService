@@ -1,4 +1,7 @@
 import { DataSource } from "typeorm";
+import { AppDataSource } from "../../src/config/data-source";
+import bcrypt from "bcryptjs";
+import { User } from "../../src/entity/User";
 
 export const truncateTables = async (connection: DataSource) => {
   const entities = connection.entityMetadatas;
@@ -28,3 +31,19 @@ export const isJwt = (token: string | null): boolean => {
     console.log((err as Error).message);
   }
 };
+export async function createUser(data: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}) {
+  const userRepository = AppDataSource.getRepository(User);
+
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  return userRepository.save({
+    ...data,
+    password: hashedPassword,
+    role: "customer",
+  });
+}

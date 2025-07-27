@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import createHttpError from "http-errors";
 import { JwtPayload, sign } from "jsonwebtoken";
 import { Config } from "../config";

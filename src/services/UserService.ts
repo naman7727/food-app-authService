@@ -3,7 +3,7 @@ import { User } from "../entity/User";
 import { Repository } from "typeorm";
 import { UserData } from "../types";
 import { Roles } from "../constants";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 export class UserService {
   constructor(private userRepository: Repository<User>) {}
   async create({ firstName, lastName, email, password }: UserData) {
@@ -26,11 +26,23 @@ export class UserService {
       }); // Returns saved user (with ID)
     } catch {
       const error = createHttpError(
-        400,
+        500,
         "Failed to store the data in the database",
       );
       throw error;
     }
+  }
+
+  async findByEmailWithPassword(email: string) {
+    return await this.userRepository.findOne({
+      where: {
+        email,
+      },
+      select: ["id", "firstName", "lastName", "email", "role", "password"],
+      relations: {
+        // tenant: true,
+      },
+    });
   }
 
   async findByEmail(email: string) {
@@ -40,5 +52,13 @@ export class UserService {
       },
     });
     return user;
+  }
+
+  async findById(id: number) {
+    return await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
   }
 }

@@ -2,19 +2,18 @@
 import "reflect-metadata";
 import { HttpError } from "http-errors";
 import logger from "./config/logger";
+import cookieParser from "cookie-parser";
 import express, { NextFunction, Request, Response } from "express";
-// import { authRouter } from "./routes/auth";
-// import { authRouter } from "./routes/auth";
 import authRouter from "./routes/auth";
 const app = express();
 
 app.use(express.json());
 
+app.use(cookieParser());
 app.use("/auth", authRouter);
-
-// app.get("/", (req, res) => {
-//   res.send("welcome naman");
-// });
+app.get("/", (req, res) => {
+  res.send("Welcome to Auth service from K8s");
+});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
