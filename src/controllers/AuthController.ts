@@ -145,6 +145,6 @@ export class AuthController {
   async self(req: AuthRequest, res: Response) {
     const user = await this.userService.findById(Number(req.auth.sub));
 
-    res.json(user);
+    res.json({ ...user, password: undefined }); // Exclude password from response
   }
 }

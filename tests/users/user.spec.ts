@@ -37,6 +37,7 @@ describe("GET /auth/self", () => {
 
       expect(response.statusCode).toBe(200);
     });
+
     it("should return the user data", async () => {
       //register a user first
       const userData = {
@@ -63,6 +64,36 @@ describe("GET /auth/self", () => {
       //Assert
       //check if user id matches with register user
       expect((response.body as Record<string, string>).id).toBe(data.id);
+    });
+
+    it("should not return the password field", async () => {
+      //register a user first
+      const userData = {
+        firstName: "Rakesh",
+        lastName: "K",
+        email: "rakesh@mern.space",
+        password: "password",
+      };
+
+      const userRepository = connection.getRepository(User);
+      const data = await userRepository.save({
+        ...userData,
+        role: Roles.CUSTOMER,
+      });
+
+      //Generate a user token
+      const accessToken = jwks.token({ sub: String(data.id), role: data.role });
+
+      //add token to cookie
+      const response = await request(app)
+        .get("/auth/self")
+        .set("Cookie", [`accessToken=${accessToken}`])
+        .send();
+      //Assert
+      //check if user id matches with register user
+      expect(response.body as Record<string, string>).not.toHaveProperty(
+        "password",
+      );
     });
   });
 });
