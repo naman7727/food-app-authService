@@ -147,4 +147,67 @@ export class AuthController {
 
     res.json({ ...user, password: undefined }); // Exclude password from response
   }
+
+  async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const payload: JwtPayload = {
+        sub: req.auth.sub,
+        role: req.auth.role,
+      };
+      const accessToken = this.tokenService.generateAccessToken(payload);
+
+      const user = await this.userService.findById(Number(req.auth.sub));
+      if (!user) {
+        const error = createHttpError(
+          400,
+          "user with the token could not find",
+        );
+        next(error);
+        return;
+      }
+      const newRefreshToken = await this.tokenService.persistRefreshToken(user);
+      //delete old refresh token
+      await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: String(newRefreshToken.id),
+      });
+
+      res.cookie("accessToken", accessToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60, // 1h
+        httpOnly: true, //vary imp.
+      });
+      res.cookie("refreshToken", refreshToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1y
+        httpOnly: true, //vary imp.
+      });
+
+      this.logger.info("User has been logged in", { id: user.id });
+
+      res.json({ id: user.id });
+    } catch (err) {
+      next(err);
+      return;
+    }
+  }
+
+  async logout(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+      this.logger.info("Refresh token has been deleted ", { id: req.auth.id });
+      this.logger.info("User  has been logged out", { id: req.auth.sub });
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
+      res.json({});
+    } catch (err) {
+      next(err);
+      return;
+    }
+  }
 }

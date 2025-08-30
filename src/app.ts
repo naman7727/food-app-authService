@@ -1,5 +1,5 @@
 // import express from "express";
-// import path from "path";
+import path from "path";
 import "reflect-metadata";
 import { HttpError } from "http-errors";
 // import logger from "./config/logger";
@@ -10,6 +10,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use("/auth", authRouter);
 app.get("/", (req, res) => {
